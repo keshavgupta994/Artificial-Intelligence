@@ -27,18 +27,33 @@ bool isGoal(vector<vector<int>>& a, vector<vector<int>>& b) {
     return a == b;
 }
 
+// Comparator that compares only the integer key (first) -> makes a min-heap by key
+struct PQCompare {
+    bool operator()(const pair<int, Node>& a, const pair<int, Node>& b) const {
+        return a.first > b.first; // smaller first => higher priority
+    }
+};
+
 void solve(vector<vector<int>> start, vector<vector<int>> goal) {
-    priority_queue<pair<int, Node>, vector<pair<int, Node>>, greater<>> pq;
-    int x, y;
+    priority_queue<pair<int, Node>, vector<pair<int, Node>>, PQCompare> pq;
+
+    int x = 0, y = 0;
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
             if (start[i][j] == 0) { x = i; y = j; }
 
-    pq.push({heuristic(start, goal), {start, x, y, heuristic(start, goal), goal}});
+    int hstart = heuristic(start, goal);
+    Node startNode = {start, x, y, hstart, goal};
+    pq.push(make_pair(hstart, startNode));
 
     set<vector<vector<int>>> visited;
     while (!pq.empty()) {
-        auto [h, node] = pq.top(); pq.pop();
+        // copy top (so it remains valid after pop)
+        auto top = pq.top(); 
+        pq.pop();
+        int h = top.first;
+        Node node = top.second;
+
         if (isGoal(node.state, goal)) {
             for (auto& row : node.state) {
                 for (int v : row) cout << v << " ";
@@ -46,7 +61,9 @@ void solve(vector<vector<int>> start, vector<vector<int>> goal) {
             }
             return;
         }
+
         visited.insert(node.state);
+
         for (int i = 0; i < 4; i++) {
             int nx = node.x + dx[i], ny = node.y + dy[i];
             if (nx >= 0 && ny >= 0 && nx < 3 && ny < 3) {
@@ -54,15 +71,19 @@ void solve(vector<vector<int>> start, vector<vector<int>> goal) {
                 swap(newState[node.x][node.y], newState[nx][ny]);
                 if (!visited.count(newState)) {
                     int hval = heuristic(newState, goal);
-                    pq.push({hval, {newState, nx, ny, hval, goal}});
+                    Node newNode = {newState, nx, ny, hval, goal};
+                    pq.push(make_pair(hval, newNode));
                 }
             }
         }
     }
+
+    cout << "No solution found\n";
 }
 
 int main() {
     vector<vector<int>> start = {{1, 2, 3}, {4, 0, 6}, {7, 5, 8}};
     vector<vector<int>> goal = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
     solve(start, goal);
+    return 0;
 }
