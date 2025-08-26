@@ -6,7 +6,6 @@ using namespace std;
 int n, m;
 vector<vector<int>> grid, visited;
 
-// 4-directional moves
 int dx[4] = {-1, 1, 0, 0};
 int dy[4] = {0, 0, -1, 1};
 
@@ -40,7 +39,7 @@ int bfs(pair<int,int> start, pair<int,int> goal) {
             }
         }
     }
-    return -1; // no path
+    return -1;
 }
 
 int main() {
