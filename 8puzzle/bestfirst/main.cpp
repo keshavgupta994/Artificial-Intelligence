@@ -27,10 +27,9 @@ bool isGoal(vector<vector<int>>& a, vector<vector<int>>& b) {
     return a == b;
 }
 
-// Comparator that compares only the integer key (first) -> makes a min-heap by key
 struct PQCompare {
     bool operator()(const pair<int, Node>& a, const pair<int, Node>& b) const {
-        return a.first > b.first; // smaller first => higher priority
+        return a.first > b.first; 
     }
 };
 
@@ -48,7 +47,6 @@ void solve(vector<vector<int>> start, vector<vector<int>> goal) {
 
     set<vector<vector<int>>> visited;
     while (!pq.empty()) {
-        // copy top (so it remains valid after pop)
         auto top = pq.top(); 
         pq.pop();
         int h = top.first;
