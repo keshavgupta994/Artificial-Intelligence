@@ -1,151 +1,68 @@
-#include <iostream>
-#include <set>
-#include <queue>
-#include <map>
-#include <algorithm>
-
+#include <bits/stdc++.h>
 using namespace std;
 
-int dx[4] = {-1, +1, 0, 0};
-int dy[4] = {0, 0, -1, +1};
+int n, m; // grid size
+vector<vector<int>> grid;
+vector<vector<int>> visited;
 
-bool isvalid(int x, int y, int row, int col, set<pair<int, int>> &blocked, set<pair<int, int>> &visited)
-{
-    if (x < 0 || x >= row || y < 0 || y >= col)
-        return false;
+// Directions: up, down, left, right
+int dx[4] = {-1, 1, 0, 0};
+int dy[4] = {0, 0, -1, 1};
 
-    if (blocked.count({x, y}))
-        return false;
-
-    if (visited.count({x, y}))
-        return false;
-
-    return true;
+bool isValid(int x, int y) {
+    return (x >= 0 && x < n && y >= 0 && y < m && grid[x][y] == 0 && !visited[x][y]);
 }
 
-int main()
-{
-    int row;
-    int column;
-    int n;
-
-    cout << "Please enter the number of rows in your grid" << endl;
-    cin >> row;
-
-    cout << "Please enter the number of columns in your grid" << endl;
-    cin >> column;
-
-    cout << "Please enter the number of spots that includes river" << endl;
-    cin >> n;
-
-    set<pair<int, int>> set_to_track;
-
-    for (int i = 0; i < n; i++)
-    {
-        int a;
-        int b;
-
-        cout << "Enter the first value of " << i + 1 << " element of the set" << endl;
-        cin >> a;
-
-        cout << "Enter the second value of " << i + 1 << " element of the set" << endl;
-        cin >> b;
-
-        set_to_track.insert({a, b});
-    }
-
-    pair<int, int> start;
-    pair<int, int> goal;
-
-    cout << "Enter starting position" << endl;
-    cin >> start.first >> start.second;
-
-    cout << "Enter ending position" << endl;
-    cin >> goal.first >> goal.second;
-
-    queue<pair<int, int>> q;
-    set<pair<int, int>> visited;
-    map<pair<int, int>, pair<int, int>> mapped;
-
+int bfs(pair<int,int> start, pair<int,int> goal) {
+    queue<pair<int,int>> q;
+    visited[start.first][start.second] = 1;
     q.push(start);
-    visited.insert(start);
 
-    mapped[start] = {-1, -1};
+    // distance matrix to track shortest path length
+    vector<vector<int>> dist(n, vector<int>(m, -1));
+    dist[start.first][start.second] = 0;
 
-    bool found = false;
-
-    while (!q.empty())
-    {
-        auto current = q.front();
+    while(!q.empty()) {
+        auto [x, y] = q.front();
         q.pop();
 
-        // FIX: compare with goal, not 'end'
-        if (current == goal)
-        {
-            found = true;
-            break;
+        if (x == goal.first && y == goal.second) {
+            return dist[x][y]; // shortest distance found
         }
 
-        for (int i = 0; i < 4; i++)
-        {
-            int nx = current.first + dx[i];
-            int ny = current.second + dy[i];
-
-            if (isvalid(nx, ny, row, column, set_to_track, visited))
-            {
+        for (int i = 0; i < 4; i++) {
+            int nx = x + dx[i], ny = y + dy[i];
+            if (isValid(nx, ny)) {
+                visited[nx][ny] = 1;
+                dist[nx][ny] = dist[x][y] + 1;
                 q.push({nx, ny});
-                visited.insert({nx, ny});
-                mapped[{nx, ny}] = current;
             }
         }
     }
 
+    return -1; // no path found
+}
 
+int main() {
+    // Example grid
+    n = 5, m = 5;
+    grid = {
+        {0, 1, 0, 0, 0},
+        {0, 1, 0, 1, 0},
+        {0, 0, 0, 1, 0},
+        {1, 1, 0, 1, 0},
+        {0, 0, 0, 0, 0}
+    };
 
+    visited.assign(n, vector<int>(m, 0));
 
-    if (!found)
-    {
-        cout << "No path is there" << endl;
-    }
+    pair<int,int> start = {0, 0};
+    pair<int,int> goal = {4, 4};
 
+    int result = bfs(start, goal);
 
-
-
-
-
-    else
-    {
-        vector<pair<int, int>> path;
-
-
-        pair<int, int> current_stand = goal;
-
-
-
-        while (current_stand != make_pair(-1, -1))
-        {
-
-            path.push_back(current_stand);
-            current_stand = mapped[current_stand];
-        }
-
-
-
-        reverse(path.begin(), path.end());
-
-
-
-        cout << "The shortest path is :" << endl;
-
-
-        for (auto &p : path)
-        {
-            cout << "(" << p.first << "," << p.second << ") ";
-        }
-
-        
-        cout << endl;
-    }
+    if(result != -1) cout << "Shortest path length: " << result << endl;
+    else cout << "No path exists!" << endl;
 
     return 0;
 }
